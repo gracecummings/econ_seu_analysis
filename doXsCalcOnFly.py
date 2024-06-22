@@ -1,6 +1,14 @@
 import argparse
 import json
 import glob
+import numpy as np
+
+def countsTotal(x):
+    #if all registers are identically zero, this is likely an I2C NACK, not actually a rollover
+    allZeros = (x[1:]==0).all(axis=1).reshape(-1,1)
+    rollOvers = ((x[1:]-x[:-1])<0)
+    rollOvers = (rollOvers & ~allZeros).sum(axis=0)
+    return rollOvers*256 + x[-1]
 
 if __name__=='__main__':
     #get command line options
@@ -31,7 +39,10 @@ if __name__=='__main__':
     if not args.allblocks and not args.combineruns:
         f = json.load(open(args.json))
         tmrerridx = f['tests'][1]['metadata']['tmr_err_names'].index(maxblock)
-        tmrcounts = f['tests'][1]['metadata']['tmr_err_cnts'][-1][tmrerridx]#last read of counts in max block
+        corrcounts = countsTotal(np.array(f['tests'][1]['metadata']['tmr_err_cnts']))
+        #tmrcounts = f['tests'][1]['metadata']['tmr_err_cnts'][-1][tmrerridx]#last read of counts in max block
+        tmrcounts = corrcounts[tmrerridx]#last read of counts in max block
+        
         xs = tmrcounts/nbits/fluenc
 
         print("Checking XS for largest block: ",maxblock)
