@@ -52,12 +52,13 @@ if __name__=='__main__':
         print("        xs (errs/bits/fluence): ",xs)
 
     elif not args.allblocks and args.combineruns:
-        fnames = glob.glob('testReport_hexa'+str(hexab)+'*')
+        fnames = glob.glob('Run*testReport_hexa'+str(hexab)+'*')
         tmrcounts = 0
         for f in fnames:
-            f = json.load(open(args.json))
+            f = json.load(open(f))
             tmrerridx = f['tests'][1]['metadata']['tmr_err_names'].index(maxblock)
-            tmrcounts += f['tests'][1]['metadata']['tmr_err_cnts'][-1][tmrerridx]#last read of counts in max block
+            corrcounts = countsTotal(np.array(f['tests'][1]['metadata']['tmr_err_cnts']))
+            tmrcounts += corrcounts[tmrerridx]#last read of counts in max block
         xs = tmrcounts/nbits/fluenc
 
         print("Checking XS for largest block: ",maxblock)
@@ -70,7 +71,8 @@ if __name__=='__main__':
     elif args.allblocks and not args.combineruns:
         f = json.load(open(args.json))
         nbits =sum(bitsf.values())
-        tmrcounts = sum(f['tests'][1]['metadata']['tmr_err_cnts'][-1])
+        corrcounts = countsTotal(np.array(f['tests'][1]['metadata']['tmr_err_cnts']))
+        tmrcounts = sum(corrcounts)
         xs = tmrcounts/nbits/fluenc
         
         print("Checking XS using all bits")
@@ -79,5 +81,20 @@ if __name__=='__main__':
         print("            Number of errs: ",tmrcounts)
         print("    xs (errs/bits/fluence): ",xs)
         
+    elif args.allblocks and args.combineruns:
+        fnames = glob.glob('Run*testReport_hexa'+str(hexab)+'*')
+        tmrcounts = 0
+        for f in fnames:
+            f = json.load(open(f))
+            corrcounts = countsTotal(np.array(f['tests'][1]['metadata']['tmr_err_cnts']))
+            tmrcounts += sum(corrcounts)
+        xs = tmrcounts/nbits/fluenc
+
+        print("Checking XS for all bits")
+        print("      Number of combined runs: ",len(fnames))
+        print("             Fluence [1/cm^2]: ",fluenc)
+        print("               Number of bits: ",nbits)
+        print("               Number of errs: ",tmrcounts)
+        print("        xs (errs/bits/fluence): ",xs)
 
         
