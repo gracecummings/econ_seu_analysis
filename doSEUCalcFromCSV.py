@@ -4,9 +4,13 @@ import math
 import argparse
 import numpy as np
 
-gruns_jun24 = [5,6,7,8,9,10,11,12,14,15,16,19,20,21,22]
+gruns_jun24_hexa43 = [5,6,7,8,9,10,11,12,14,15,16,19,20,21,22]
+gruns_jun24_hexa44 = [5,6,7,8,9,10,11,12,14,15,16,19,20,21]
+gruns_jun24_hexa42 = [5,6,7,8,9,10,11,12,14,15,16,20,21,22]
 
-rundict = {"jun24":gruns_jun24}
+rundict = {"jun24_hexa43":gruns_jun24_hexa43,
+           "jun24_hexa44":gruns_jun24_hexa44,
+           "jun24_hexa42":gruns_jun24_hexa42}
 
 if __name__=='__main__':
     #get command line options
@@ -26,7 +30,7 @@ if __name__=='__main__':
     #load info
     tmrerrs = args.tmrfile
     runinfo = args.runlog
-    goodruns = rundict[args.runperiod]
+    goodruns = rundict[args.runperiod+"_hexa"+str(args.hexaboard)]
     if args.target == 'ECOND':
         bitsf = json.load(open('econd_tmr_numbbits.json'))
     elif args.target == 'ECONT':
@@ -58,6 +62,7 @@ if __name__=='__main__':
         nbits = bitsf[tmrcnt]
         counts = np.array(analdf[tmrcnt])
 
+        
         xsprun = counts/nbits/fluenc
         ucprun = np.sqrt(counts)/nbits/fluenc
 
